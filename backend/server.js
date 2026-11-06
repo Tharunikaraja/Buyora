@@ -16,6 +16,13 @@ const marketTwinRoutes = require('./routes/markettwinRoutes');
 
 const app = express();
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'BUYORA Backend is Running!',
+    status: 'Success',
+  });
+});
+
 app.locals.products = [];
 app.locals.users = [
   {
