@@ -1,0 +1,17 @@
+a {
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  outline: none;
+}
+
+img {
+  user-select: none;
+}
