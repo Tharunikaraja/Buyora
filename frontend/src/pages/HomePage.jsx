@@ -17,17 +17,31 @@ const categoryMeta = [
   { name: 'Everyday Essentials', icon: ShoppingBag },
 ];
 
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 export default function HomePage() {
   const [products, setProducts] = useState([]);
   const { addToCart } = useCart();
 
   useEffect(() => {
-    getProducts({ sort: 'popular' }).then((response) => setProducts(response.data.products || [])).catch(() => setProducts([]));
+    getProducts({ sort: 'popular' })
+      .then((response) => {
+        const nextProducts = Array.isArray(response?.data?.products) ? response.data.products : [];
+        setProducts(nextProducts);
+      })
+      .catch(() => setProducts([]));
   }, []);
 
-  const featured = products.filter((product) => product.featured).slice(0, 8);
-  const deals = products.filter((product) => product.discountPrice && product.discountPrice < product.price).slice(0, 4);
-  const topRated = [...products].sort((a, b) => b.rating - a.rating).slice(0, 4);
+  const featured = products.filter((product) => Boolean(product.featured)).slice(0, 8);
+  const deals = products.filter((product) => {
+    const price = toNumber(product.price, 0);
+    const discountPrice = toNumber(product.discountPrice ?? product.price, price);
+    return discountPrice > 0 && discountPrice < price;
+  }).slice(0, 4);
+  const topRated = [...products].sort((a, b) => toNumber(b.rating, 0) - toNumber(a.rating, 0)).slice(0, 4);
 
   return (
     <div className="space-y-16 pb-16">

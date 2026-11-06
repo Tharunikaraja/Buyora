@@ -36,7 +36,11 @@ export default function ProductsPage() {
     };
 
     getProducts(params)
-      .then((response) => setProducts(response.data.products || []))
+      .then((response) => {
+        const nextProducts = Array.isArray(response?.data?.products) ? response.data.products : [];
+        setProducts(nextProducts);
+      })
+      .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, [filters]);
 
