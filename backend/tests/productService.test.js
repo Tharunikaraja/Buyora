@@ -50,6 +50,50 @@ test('getAllProducts returns an empty list when no database is configured', asyn
   assert.equal(products.length, 0);
 });
 
+test('listProducts accepts an optional limit and preserves the response shape', async () => {
+  const { listProducts } = require('../controllers/productController');
+  const productService = require('../services/productService');
+  const originalGetAllProducts = productService.getAllProducts;
+  const originalFilterProducts = productService.filterProducts;
+
+  const generatedProducts = Array.from({ length: 25 }, (_, index) => ({
+    productId: `TECH${index + 1}`,
+    name: `Demo Product ${index + 1}`,
+    brand: 'BUYVERSE',
+    category: 'Electronics',
+    description: 'Demo product',
+    price: 1000 + index,
+    discountPrice: 900 + index,
+    images: ['demo.jpg'],
+    stock: 10,
+    deliveryDays: 3,
+    rating: 4.5,
+    reviews: 50,
+    featured: false,
+    bestSeller: false,
+    categoryTag: '',
+  }));
+
+  productService.getAllProducts = async () => generatedProducts;
+  productService.filterProducts = async () => generatedProducts;
+
+  let response;
+  await listProducts({ query: { limit: '10' } }, {
+    json(payload) {
+      response = payload;
+      return payload;
+    },
+  });
+
+  assert.equal(response.success, true);
+  assert.equal(Array.isArray(response.products), true);
+  assert.equal(response.products.length, 10);
+  assert.equal(response.count, 10);
+
+  productService.getAllProducts = originalGetAllProducts;
+  productService.filterProducts = originalFilterProducts;
+});
+
 test('addItem adds a valid product to user cart when product lookup is async', async () => {
   const originalLoad = Module._load;
   const stubbedProductService = {

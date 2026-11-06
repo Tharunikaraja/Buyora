@@ -1,7 +1,7 @@
 const { filterProducts, getAllProducts, getProductById, getProductsByCategory, searchProducts } = require('../services/productService');
 
 const listProducts = async (req, res) => {
-  const { minPrice, maxPrice, brand, category, rating, stock, deliveryMax, sort, q } = req.query;
+  const { minPrice, maxPrice, brand, category, rating, stock, deliveryMax, sort, q, limit } = req.query;
 
   let products = q ? await searchProducts(q) : await getAllProducts();
   const filteredProducts = await filterProducts({
@@ -32,6 +32,11 @@ const listProducts = async (req, res) => {
   if (sort === 'highest-rated') products.sort((a, b) => b.rating - a.rating);
   if (sort === 'newest') products.sort((a, b) => (b.productId > a.productId ? 1 : -1));
   if (sort === 'popular') products.sort((a, b) => b.reviews - a.reviews);
+
+  const parsedLimit = Number(limit);
+  if (limit !== undefined && limit !== '' && Number.isFinite(parsedLimit) && parsedLimit >= 0) {
+    products = products.slice(0, parsedLimit);
+  }
 
   return res.json({ success: true, products, count: products.length });
 };
